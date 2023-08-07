@@ -1,0 +1,109 @@
+import java.util.*;
+
+public class Calculator {
+
+    public static void main(String[] args) {
+        Scanner scanner = new Scanner(System.in);
+        System.out.print("Введите выражение: ");
+        String input = scanner.nextLine();
+
+        try {
+            String[] parts = input.split(" ");
+            if (parts.length != 3) {
+                throw new IllegalArgumentException("Неверный формат выражения");
+            }
+
+            String firstOperand = parts[0];
+            String operator = parts[1];
+            String secondOperand = parts[2];
+
+            boolean isRoman = isRomanNumber(firstOperand) && isRomanNumber(secondOperand);
+            int num1 = isRoman ? romanToArabic(firstOperand) : Integer.parseInt(firstOperand);
+            int num2 = isRoman ? romanToArabic(secondOperand) : Integer.parseInt(secondOperand);
+
+            int result;
+            switch (operator) {
+                case "+":
+                    result = num1 + num2;
+                    break;
+                case "-":
+                    result = num1 - num2;
+                    break;
+                case "*":
+                    result = num1 * num2;
+                    break;
+                case "/":
+                    if (num2 == 0) {
+                        throw new ArithmeticException("Деление на ноль запрещено");
+                    }
+                    result = num1 / num2;
+                    break;
+                default:
+                    throw new IllegalArgumentException("Неподдерживаемая операция");
+            }
+
+            String output = isRoman ? arabicToRoman(result) : String.valueOf(result);
+            System.out.println("Результат: " + output);
+
+        } catch (NumberFormatException e) {
+            System.out.println("Ошибка: Неверный формат числа");
+        } catch (IllegalArgumentException | ArithmeticException e) {
+            System.out.println("Ошибка: " + e.getMessage());
+        }
+    }
+
+    public static boolean isRomanNumber(String input) {
+        String romanPattern = "(XC|XL|L?X{0,3})(IX|IV|V?I{0,3})$";
+        return input.matches(romanPattern);
+    }
+
+    public static int romanToArabic(String romanNumber) {
+        Map<Character, Integer> romanValues = new HashMap<>();
+        romanValues.put('I', 1);
+        romanValues.put('V', 5);
+        romanValues.put('X', 10);
+        romanValues.put('L', 50);
+        romanValues.put('C', 100);
+
+
+        int arabicNumber = 0;
+        int prevValue = 0;
+
+        for (int i = romanNumber.length() - 1; i >= 0; i--) {
+            int currentValue = romanValues.get(romanNumber.charAt(i));
+
+            if (currentValue >= prevValue) {
+                arabicNumber += currentValue;
+            } else {
+                arabicNumber -= currentValue;
+            }
+
+            prevValue = currentValue;
+        }
+
+        return arabicNumber;
+    }
+
+    public static String arabicToRoman(int number) {
+        if (number < 1) {
+            throw new IllegalArgumentException("Римские числа не могут быть меньше единицы");
+        }
+
+        String[] romanSymbols = {"C", "XC", "L", "XL", "X", "IX", "V", "IV", "I"};
+        int[] arabicValues = {100, 90, 50, 40, 10, 9, 5, 4, 1};
+
+        StringBuilder romanNumber = new StringBuilder();
+
+        int i = 0;
+        while (number > 0) {
+            if (number >= arabicValues[i]) {
+                romanNumber.append(romanSymbols[i]);
+                number -= arabicValues[i];
+            } else {
+                i++;
+            }
+        }
+
+        return romanNumber.toString();
+    }
+}
