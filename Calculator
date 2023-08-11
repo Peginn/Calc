@@ -1,3 +1,4 @@
+import java.io.IOException;
 import java.util.*;
 
 public class Calculator {
@@ -21,6 +22,17 @@ public class Calculator {
             int num1 = isRoman ? romanToArabic(firstOperand) : Integer.parseInt(firstOperand);
             int num2 = isRoman ? romanToArabic(secondOperand) : Integer.parseInt(secondOperand);
 
+
+            if (!(num1>=1 && num1<=10)) {
+                System.out.println("Первое число должно быть от 1 до 10 или от I до X.");
+                throw new IllegalArgumentException();
+            }
+
+            if (!(num2>=1 && num2<=10)) {
+                System.out.println("Второе число должно быть от 1 до 10 или от I до X.");
+                throw new IllegalArgumentException();
+            }
+
             int result;
             switch (operator) {
                 case "+":
@@ -43,7 +55,7 @@ public class Calculator {
             }
 
             String output = isRoman ? arabicToRoman(result) : String.valueOf(result);
-            System.out.println("Результат: " + output);
+            System.out.print(output);
 
         } catch (NumberFormatException e) {
             System.out.println("Ошибка: Неверный формат числа");
