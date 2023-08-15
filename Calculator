@@ -1,75 +1,67 @@
-import java.io.IOException;
 import java.util.*;
 
-public class Calculator {
-
+public class Main {
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
-        System.out.print("Введите выражение: ");
         String input = scanner.nextLine();
 
-        try {
-            String[] parts = input.split(" ");
-            if (parts.length != 3) {
-                throw new IllegalArgumentException("Неверный формат выражения");
-            }
 
-            String firstOperand = parts[0];
-            String operator = parts[1];
-            String secondOperand = parts[2];
-
-            boolean isRoman = isRomanNumber(firstOperand) && isRomanNumber(secondOperand);
-            int num1 = isRoman ? romanToArabic(firstOperand) : Integer.parseInt(firstOperand);
-            int num2 = isRoman ? romanToArabic(secondOperand) : Integer.parseInt(secondOperand);
+        String[] parts = input.split(" ");
+        String operand1 = parts[0];
+        String operator = parts[1];
+        String operand2 = parts[2];
 
 
-            if (!(num1>=1 && num1<=10)) {
-                System.out.println("Первое число должно быть от 1 до 10 или от I до X.");
-                throw new IllegalArgumentException();
-            }
+        boolean isRoman = isRomanNumeral(operand1) && isRomanNumeral(operand2);
 
-            if (!(num2>=1 && num2<=10)) {
-                System.out.println("Второе число должно быть от 1 до 10 или от I до X.");
-                throw new IllegalArgumentException();
-            }
 
-            int result;
-            switch (operator) {
-                case "+":
-                    result = num1 + num2;
-                    break;
-                case "-":
-                    result = num1 - num2;
-                    break;
-                case "*":
-                    result = num1 * num2;
-                    break;
-                case "/":
-                    if (num2 == 0) {
-                        throw new ArithmeticException("Деление на ноль запрещено");
-                    }
-                    result = num1 / num2;
-                    break;
-                default:
-                    throw new IllegalArgumentException("Неподдерживаемая операция");
-            }
+        int num1 = isRoman ? romanToDecimal(operand1) : Integer.parseInt(operand1);
+        int num2 = isRoman ? romanToDecimal(operand2) : Integer.parseInt(operand2);
 
-            String output = isRoman ? arabicToRoman(result) : String.valueOf(result);
-            System.out.print(output);
-
-        } catch (NumberFormatException e) {
-            System.out.println("Ошибка: Неверный формат числа");
-        } catch (IllegalArgumentException | ArithmeticException e) {
-            System.out.println("Ошибка: " + e.getMessage());
+        if (num1 < 1 || num1 > 10 || num2 < 1 || num2 > 10) {
+            throw new IllegalArgumentException("Числа должны быть в диапазоне от 1 до 10");
         }
+
+
+        int result;
+        String output;
+
+
+        switch (operator) {
+            case "+":
+                result = num1 + num2;
+                break;
+            case "-":
+                result = num1 - num2;
+                break;
+            case "*":
+                result = num1 * num2;
+                break;
+            case "/":
+                // Проверяем деление на ноль
+                if (num2 == 0) {
+                    throw new ArithmeticException("Деление на ноль недопустимо");
+                }
+                result = num1 / num2;
+                break;
+            default:
+                throw new IllegalArgumentException("Неправильный оператор: " + operator);
+        }
+
+
+        output = isRoman ? decimalToRoman(result) : String.valueOf(result);
+
+
+        System.out.println(output);
     }
 
-    public static boolean isRomanNumber(String input) {
-        String romanPattern = "(XC|XL|L?X{0,3})(IX|IV|V?I{0,3})$";
-        return input.matches(romanPattern);
+
+    public static boolean isRomanNumeral(String str) {
+        return str.matches("^(?i)(M{0,3})(CM|CD|D?C{0,3})(XC|XL|L?X{0,3})(IX|IV|V?I{0,3})$");
     }
 
-    public static int romanToArabic(String romanNumber) {
+
+    public static int romanToDecimal(String roman) {
         Map<Character, Integer> romanValues = new HashMap<>();
         romanValues.put('I', 1);
         romanValues.put('V', 5);
@@ -78,44 +70,40 @@ public class Calculator {
         romanValues.put('C', 100);
 
 
-        int arabicNumber = 0;
+        int result = 0;
         int prevValue = 0;
 
-        for (int i = romanNumber.length() - 1; i >= 0; i--) {
-            int currentValue = romanValues.get(romanNumber.charAt(i));
+        for (int i = roman.length() - 1; i >= 0; i--) {
+            int curValue = romanValues.get(roman.charAt(i));
 
-            if (currentValue >= prevValue) {
-                arabicNumber += currentValue;
+            if (curValue < prevValue) {
+                result -= curValue;
             } else {
-                arabicNumber -= currentValue;
+                result += curValue;
+                prevValue = curValue;
             }
-
-            prevValue = currentValue;
         }
 
-        return arabicNumber;
+        return result;
     }
 
-    public static String arabicToRoman(int number) {
-        if (number < 1) {
-            throw new IllegalArgumentException("Римские числа не могут быть меньше единицы");
+        public static String decimalToRoman(int number) {
+        if (number < 1 || number > 100) {
+            throw new IllegalArgumentException("Неподдерживаемое римское число");
         }
 
         String[] romanSymbols = {"C", "XC", "L", "XL", "X", "IX", "V", "IV", "I"};
-        int[] arabicValues = {100, 90, 50, 40, 10, 9, 5, 4, 1};
+        int[] romanValues = {100, 90, 50, 40, 10, 9, 5, 4, 1};
 
-        StringBuilder romanNumber = new StringBuilder();
+        StringBuilder result = new StringBuilder();
 
-        int i = 0;
-        while (number > 0) {
-            if (number >= arabicValues[i]) {
-                romanNumber.append(romanSymbols[i]);
-                number -= arabicValues[i];
-            } else {
-                i++;
+        for (int i = 0; i < romanValues.length; i++) {
+            while (number >= romanValues[i]) {
+                result.append(romanSymbols[i]);
+                number -= romanValues[i];
             }
         }
 
-        return romanNumber.toString();
+        return result.toString();
     }
 }
